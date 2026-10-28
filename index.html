@@ -12,16 +12,23 @@
 <title>Britney Spears</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{background:#9f1c22}
-body{margin:0;font:400 16px Roboto,sans-serif;color:#fff;background:linear-gradient(#a31b22,#760f1a) fixed;min-height:100vh}
+html{background:#a01b22}
+body{margin:0;position:fixed;inset:0;overflow:hidden;font:400 16px Roboto,sans-serif;color:#fff;background:linear-gradient(#a31b22,#8e1a21)}
 a{color:inherit;text-decoration:none}
 button,input{font-family:Roboto,sans-serif}
-#app{max-width:520px;margin:0 auto;padding-bottom:calc(150px + env(safe-area-inset-bottom))}
-.hd{background:url(design.png) top/100% auto no-repeat;padding-top:69.5%}
-.home{position:relative;background:url(design.png) top/100% 100% no-repeat;aspect-ratio:1320/2868}
+#st{position:absolute;visibility:hidden;height:env(safe-area-inset-top,0px)}
+#bg{position:fixed;z-index:1;background:url(design.jpg) center/100% 100% no-repeat}
 .hs{position:absolute;left:5.9%;width:46.8%;height:6.03%;border-radius:999px}
 .debug .hs{outline:2px solid #0f0}
-h1{font-weight:300;font-size:30px;margin:10px 20px 16px;letter-spacing:.3px}
+#app{position:fixed;z-index:2;left:0;right:0;top:var(--sh,0);bottom:var(--bh,70px);max-width:520px;margin:0 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:24px;background:linear-gradient(rgba(118,15,26,0),rgba(118,15,26,.94) 46px)}
+#app::before{content:"";display:block;height:34px}
+body:not(.inner) #app,body:not(.inner) #tg,body.peek #app{display:none}
+#tg{position:fixed;z-index:5;left:50%;transform:translateX(-50%);top:var(--sh,0);width:120px;height:34px;border:0;background:none;color:#fff}
+#tg::after{content:"";position:absolute;left:30px;right:30px;top:12px;height:5px;border-radius:3px;background:rgba(255,255,255,.85)}
+body.peek #tg{top:auto;bottom:calc(var(--bh,70px) + 12px);width:auto;height:auto;padding:11px 24px;border:1.5px solid #fff;border-radius:999px;background:linear-gradient(90deg,#d94f8e,#99144a);font-size:15px;font-weight:300}
+body.peek #tg::after{display:none}
+a,h1{-webkit-user-select:none;user-select:none}
+h1{font-weight:300;font-size:30px;margin:6px 20px 16px;letter-spacing:.3px}
 h2{font-weight:400;font-size:18px;margin:24px 20px 4px}
 .m{margin:0 20px 16px;font-weight:300;line-height:1.5}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 16px;padding:0 20px}
@@ -43,12 +50,12 @@ h2{font-weight:400;font-size:18px;margin:24px 20px 4px}
 #pl button{background:none;border:0;color:#fff;padding:6px;display:flex}
 #pl svg{width:26px;height:26px;fill:#fff}
 #sk{width:100%;margin:6px 0 0;accent-color:#fff}
-#nav{display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:rgba(70,8,18,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.25)}
+#nav{display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:rgba(70,8,18,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.25)}
 #nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:300;opacity:.7}
 #nav a.on{opacity:1;font-weight:500}
 #nav svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 </style></head><body>
-<div id="app"></div>
+<div id="st"></div><div id="bg"></div><div id="app"></div><button id="tg"></button>
 <div id="bar"><div>
 <div id="pl"><div class="t"><div class="n"><div id="pn"></div><div class="s" id="ps"></div></div>
 <button id="bp" aria-label="Previous"></button><button id="bt" aria-label="Play or pause"></button><button id="bn" aria-label="Next"></button></div>
@@ -58,39 +65,48 @@ h2{font-weight:400;font-size:18px;margin:24px 20px 4px}
 <a href="#/search" data-p="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search</a>
 <a href="#/library" data-p="library"><svg viewBox="0 0 24 24"><path d="M5 4v16M10 4v16M15 5l4 15"/></svg>Library</a>
 </nav></div></div>
+<script src="config.js"></script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
-// ---- SETTINGS: paste your OAuth client ID (NOT the secret) ----
-const CLIENT_ID='458363705644-r813h020kb5v27r81rvlk4o2o1r9152d.apps.googleusercontent.com';
 const ROOT='1QahxEmpd_6KO1NCjTb6VXmFZBFZlBJRF'; // Britney Music Library
 const CATS=['Albums','Singles & EPs','AI','Compilations','Remixes','Live','Other'];
-const TOPS=[33.05,40.59,48.15,55.75,63.32,70.89,78.45];
-const D='https://www.googleapis.com/drive/v3/files',FOLDER='application/vnd.google-apps.folder';
-const $=s=>document.querySelector(s),app=$('#app'),ls=localStorage,enc=encodeURIComponent;
+const TOPS=[33.05,40.59,48.15,55.75,63.32,70.89,78.45],RATIO=1320/2868;
+const D='https://www.googleapis.com/drive/v3/files',FOLDER='application/vnd.google-apps.folder',SD='&supportsAllDrives=true';
+const $=s=>document.querySelector(s),app=$('#app'),bg=$('#bg'),ls=localStorage,enc=encodeURIComponent;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const isAudio=f=>/^audio\//.test(f.mimeType)||/\.(mp3|m4a|aac|wav|flac|aiff?|ogg)$/i.test(f.name);
 const aName=n=>n.replace(/^\s*\d{4}(?:[-._]\d{2}){0,2}\s*[-–_.]?\s*/,'')||n;
 const tName=n=>n.replace(/\.[^.]+$/,'');
+const norm=n=>n.toLowerCase().replace(/&/g,'and').replace(/[^a-z0-9]/g,'');
 const key=n=>{const m=n.match(/^\s*(\d{4})(?:[-._](\d{2}))?(?:[-._](\d{2}))?/);return m?m[1]*1e4+(+m[2]||0)*100+(+m[3]||0):1e9};
 const byDate=(a,b)=>key(a.name)-key(b.name)||a.name.localeCompare(b.name,undefined,{numeric:true});
 const byName=(a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true});
-const hdr='<div class="hd"></div>';
 let token=ls.bt,exp=+ls.be||0,tc;
 document.body.classList.toggle('debug',/debug/.test(location.search));
 
+// ---- Layout: full design fitted to the screen on every page ----
+function fit(){const st=$('#st').offsetHeight,bh=$('#bar').offsetHeight,H0=innerHeight-st-bh,w=Math.min(innerWidth,H0*RATIO),h=w/RATIO,top=st+(H0-h)/2,r=document.documentElement.style;
+ bg.style.cssText=`width:${w}px;height:${h}px;left:${(innerWidth-w)/2}px;top:${top}px`;
+ r.setProperty('--sh',(top+h*.325)+'px');r.setProperty('--bh',bh+'px')}
+addEventListener('resize',fit);new ResizeObserver(fit).observe($('#bar'));
+const tgl=()=>$('#tg').textContent=document.body.classList.contains('peek')?'Show music':'';
+$('#tg').onclick=()=>{document.body.classList.toggle('peek');tgl()};
+
 // ---- Google auth + Drive ----
-function signIn(){return new Promise((res,rej)=>{
+function signIn(prompt=''){return new Promise((res,rej)=>{
  if(!window.google)return rej('Google sign-in is still loading. Try again in a moment.');
  tc=tc||google.accounts.oauth2.initTokenClient({client_id:CLIENT_ID,scope:'https://www.googleapis.com/auth/drive.readonly',callback:()=>{}});
  tc.callback=r=>{if(r.access_token){token=r.access_token;exp=Date.now()+r.expires_in*1000-60000;ls.bt=token;ls.be=exp;res()}else rej('Sign-in was cancelled.')};
  tc.error_callback=()=>rej('Sign-in was cancelled.');
- tc.requestAccessToken({prompt:''})})}
+ tc.requestAccessToken({prompt})})}
 async function g(url){if(!token||Date.now()>exp)throw'auth';const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});if(r.status==401){token=null;throw'auth'}if(!r.ok)throw Error('Drive error '+r.status);return r}
 const LC=new Map();
-async function list(id){if(!LC.has(id)){let out=[],pt='';do{const j=await(await g(`${D}?q=${enc(`'${id}' in parents and trashed=false`)}&fields=nextPageToken,files(id,name,mimeType)&pageSize=1000${pt?'&pageToken='+pt:''}`)).json();out=out.concat(j.files);pt=j.nextPageToken}while(pt);LC.set(id,out)}return LC.get(id)}
-let CI;async function catIds(){if(!CI){CI={};(await list(ROOT)).forEach(f=>{if(f.mimeType==FOLDER)CI[f.name.trim().toLowerCase()]=f.id})}return CI}
+async function list(id){if(!LC.has(id)){let out=[],pt='';do{const j=await(await g(`${D}?q=${enc(`'${id}' in parents and trashed=false`)}&fields=nextPageToken,files(id,name,mimeType,shortcutDetails(targetId,targetMimeType))&pageSize=1000&corpora=allDrives&includeItemsFromAllDrives=true${SD}${pt?'&pageToken='+pt:''}`)).json();
+ out=out.concat(j.files.map(f=>f.shortcutDetails?{...f,id:f.shortcutDetails.targetId,mimeType:f.shortcutDetails.targetMimeType}:f));pt=j.nextPageToken}while(pt);LC.set(id,out)}return LC.get(id)}
+let CI;async function catIds(){if(!CI){const m={};(await list(ROOT)).forEach(f=>{if(f.mimeType==FOLDER)m[norm(f.name)]=f.id});if(!Object.keys(m).length){LC.delete(ROOT);return m}CI=m}return CI}
+const find=(m,c)=>{const k=norm(c);return m[k]||m[Object.keys(m).find(x=>x.endsWith(k))]};
 const NM=new Map(),CV=new Map();
-function cover(id){if(!CV.has(id))CV.set(id,(async()=>{const f=(await list(id)).find(f=>/^cover\.(jpe?g|png)$/i.test(f.name));if(!f)return null;return URL.createObjectURL(await(await g(`${D}/${f.id}?alt=media`)).blob())})().catch(()=>null));return CV.get(id)}
+function cover(id){if(!CV.has(id))CV.set(id,(async()=>{const f=(await list(id)).find(f=>/^cover\.(jpe?g|png)$/i.test(f.name));if(!f)return null;return URL.createObjectURL(await(await g(`${D}/${f.id}?alt=media${SD}`)).blob())})().catch(()=>null));return CV.get(id)}
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){io.unobserve(e.target);cover(e.target.dataset.id).then(u=>{if(u)e.target.innerHTML=`<img src="${u}" alt="">`})}}),{rootMargin:'300px'});
 const lazy=()=>document.querySelectorAll('.cv[data-id]').forEach(el=>io.observe(el));
 const tile=f=>{NM.set(f.id,aName(f.name));return `<a class="tile" href="#/album/${f.id}"><div class="cv" data-id="${f.id}"></div><span>${esc(aName(f.name))}</span></a>`};
@@ -101,7 +117,7 @@ const MT={mp3:'audio/mpeg',m4a:'audio/mp4',aac:'audio/aac',wav:'audio/wav',flac:
 const IC={p:'<svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>',n:'<svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>',play:'<svg viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>',pause:'<svg viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>'};
 $('#bp').innerHTML=IC.p;$('#bn').innerHTML=IC.n;$('#bt').innerHTML=IC.play;
 let Q=[],qi=-1,meta={},blobs=new Map(),unl=0;
-function blob(f){if(!blobs.has(f.id))blobs.set(f.id,g(`${D}/${f.id}?alt=media`).then(async r=>URL.createObjectURL(new Blob([await r.arrayBuffer()],{type:MT[f.name.split('.').pop().toLowerCase()]||f.mimeType}))));return blobs.get(f.id)}
+function blob(f){if(!blobs.has(f.id))blobs.set(f.id,g(`${D}/${f.id}?alt=media${SD}`).then(async r=>URL.createObjectURL(new Blob([await r.arrayBuffer()],{type:MT[f.name.split('.').pop().toLowerCase()]||f.mimeType}))));return blobs.get(f.id)}
 function mark(){document.querySelectorAll('.tr').forEach(el=>el.classList.toggle('on',Q[qi]&&el.dataset.id==Q[qi].id))}
 function ui(s){$('#pl').style.display='block';$('#pn').textContent=Q[qi]?tName(Q[qi].name):'';$('#ps').textContent=s||meta.album||'Britney Spears'}
 async function play(list,i,album,cid){
@@ -125,33 +141,40 @@ $('#sk').oninput=e=>{if(A.duration)A.currentTime=e.target.value/1000*A.duration}
 // ---- Pages ----
 const trackRows=fs=>fs.map((f,i)=>`<a class="row tr" data-i="${i}" data-id="${f.id}">${esc(tName(f.name))}</a>`).join('');
 function bindTracks(fs,album,cid){app.querySelectorAll('.tr').forEach(el=>el.onclick=()=>play(fs,+el.dataset.i,album,cid));mark()}
-const msg=t=>app.innerHTML=hdr+`<p class="m">${t}</p>`;
-function signinUI(){app.innerHTML=hdr+'<h1>Sign in</h1><p class="m">Sign in with the Google account that owns Britney Music Library.</p><button class="btn" id="si">Sign in with Google</button><p class="m" id="se"></p>';
+const msg=t=>app.innerHTML=`<p class="m">${t}</p>`;
+function signinUI(){app.innerHTML='<h1>Sign in</h1><p class="m">Sign in with the Google account that owns Britney Music Library.</p><button class="btn" id="si">Sign in with Google</button><p class="m" id="se"></p>';
  $('#si').onclick=()=>signIn().then(route).catch(e=>$('#se').textContent=e)}
+async function notFound(name){let h=`<h1>${esc(name)}</h1><p class="m">Couldn’t find a folder named “${esc(name)}” in Britney Music Library.<br><br>`;
+ try{const u=await(await g('https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)')).json();h+=`Signed in as ${esc(u.user.emailAddress)}.<br>`}catch(e){if(e==='auth')throw e}
+ try{const j=await(await g(`${D}/${ROOT}?fields=name${SD}`)).json();h+=`Root folder: “${esc(j.name)}”.<br>`}catch(e){h+='This account can’t open the Britney Music Library folder.<br>'}
+ const ns=(await list(ROOT)).map(f=>esc(f.name));h+=ns.length?`Found inside: ${ns.slice(0,20).join(', ')}.`:'The folder looks empty to this account.';
+ app.innerHTML=h+'</p><button class="btn" id="sw">Use a different Google account</button>';
+ $('#sw').onclick=()=>{LC.clear();CI=null;signIn('select_account').then(route).catch(()=>0)}}
 async function view(){
  const [p,a]=location.hash.replace(/^#\/?/,'').split('/');
  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p==(p=='cat'||p=='album'?'library':p||'')));
- scrollTo(0,0);
- if(!p){app.innerHTML='<div class="home">'+CATS.map((c,i)=>`<a class="hs" style="top:${TOPS[i]}%" href="#/cat/${enc(c)}" aria-label="${esc(c)}"></a>`).join('')+'</div>';return}
- if(p=='library'){app.innerHTML=hdr+'<h1>Library</h1>'+CATS.map(c=>`<a class="row" href="#/cat/${enc(c)}">${esc(c)}</a>`).join('');return}
+ document.body.classList.toggle('inner',!!p);document.body.classList.remove('peek');tgl();app.scrollTop=0;fit();
+ bg.innerHTML=p?'':CATS.map((c,i)=>`<a class="hs" style="top:${TOPS[i]}%" href="#/cat/${enc(c)}" aria-label="${esc(c)}"></a>`).join('');
+ if(!p)return;
+ if(p=='library'){app.innerHTML='<h1>Library</h1>'+CATS.map(c=>`<a class="row" href="#/cat/${enc(c)}">${esc(c)}</a>`).join('');return}
  if(p=='search')return search();
- if(p=='cat'){const name=decodeURIComponent(a);app.innerHTML=hdr+`<h1>${esc(name)}</h1><p class="m">Loading…</p>`;
-  const id=(await catIds())[name.toLowerCase()];if(!id)return msg(`Couldn’t find a folder named “${esc(name)}” in Britney Music Library.`);
+ if(p=='cat'){const name=decodeURIComponent(a);app.innerHTML=`<h1>${esc(name)}</h1><p class="m">Loading…</p>`;
+  const id=find(await catIds(),name);if(!id)return notFound(name);
   const it=await list(id),dirs=it.filter(f=>f.mimeType==FOLDER).sort(byDate),fs=it.filter(isAudio).sort(byName);
-  app.innerHTML=hdr+`<h1>${esc(name)}</h1>`+(dirs.length?`<div class="grid">${dirs.map(tile).join('')}</div>`:'')+(fs.length?'<h2>Tracks</h2>'+trackRows(fs):'')+(dirs.length||fs.length?'':'<p class="m">Nothing here yet.</p>');
+  app.innerHTML=`<h1>${esc(name)}</h1>`+(dirs.length?`<div class="grid">${dirs.map(tile).join('')}</div>`:'')+(fs.length?'<h2>Tracks</h2>'+trackRows(fs):'')+(dirs.length||fs.length?'':'<p class="m">Nothing here yet.</p>');
   lazy();bindTracks(fs,name,null);return}
- if(p=='album'){app.innerHTML=hdr+'<p class="m">Loading…</p>';
-  if(!NM.has(a))NM.set(a,aName((await(await g(`${D}/${a}?fields=name`)).json()).name));
+ if(p=='album'){app.innerHTML='<p class="m">Loading…</p>';
+  if(!NM.has(a))NM.set(a,aName((await(await g(`${D}/${a}?fields=name${SD}`)).json()).name));
   const name=NM.get(a),it=await list(a),dirs=it.filter(f=>f.mimeType==FOLDER).sort(byDate),fs=it.filter(isAudio).sort(byName);
-  app.innerHTML=hdr+`<h1>${esc(name)}</h1><div class="cv big" data-id="${a}"></div>`+(fs.length?'<button class="btn" id="pa">Play</button>'+trackRows(fs):'')+(dirs.length?`<div class="grid" style="margin-top:20px">${dirs.map(tile).join('')}</div>`:'')+(dirs.length||fs.length?'':'<p class="m">No tracks in this folder.</p>');
+  app.innerHTML=`<h1>${esc(name)}</h1><div class="cv big" data-id="${a}"></div>`+(fs.length?'<button class="btn" id="pa">Play</button>'+trackRows(fs):'')+(dirs.length?`<div class="grid" style="margin-top:20px">${dirs.map(tile).join('')}</div>`:'')+(dirs.length||fs.length?'':'<p class="m">No tracks in this folder.</p>');
   lazy();bindTracks(fs,name,a);if($('#pa'))$('#pa').onclick=()=>play(fs,0,name,a)}
 }
 let IDX=null;
 async function build(set){const ids=await catIds();IDX=[];let n=0;
- for(const c of CATS){const id=ids[c.toLowerCase()];if(!id)continue;const dirs=(await list(id)).filter(f=>f.mimeType==FOLDER);
+ for(const c of CATS){const id=find(ids,c);if(!id)continue;const dirs=(await list(id)).filter(f=>f.mimeType==FOLDER);
   for(let i=0;i<dirs.length;i+=6)await Promise.all(dirs.slice(i,i+6).map(async d=>{const fs=(await list(d.id)).filter(isAudio).sort(byName);IDX.push({id:d.id,name:aName(d.name),fs});set(++n)}))}}
 async function search(){
- app.innerHTML=hdr+'<h1>Search</h1><input class="in" id="q" type="search" placeholder="Albums and songs" autocomplete="off"><div id="rs"></div>';
+ app.innerHTML='<h1>Search</h1><input class="in" id="q" type="search" placeholder="Albums and songs" autocomplete="off"><div id="rs"></div>';
  const q=$('#q'),rs=$('#rs');
  if(!IDX){rs.innerHTML='<p class="m">Indexing your library…</p>';try{await build(n=>{if($('#rs'))$('#rs').innerHTML=`<p class="m">Indexing your library… ${n} folders</p>`})}catch(e){IDX=null;throw e}}
  const go=()=>{const t=q.value.trim().toLowerCase();if(t.length<2){rs.innerHTML='<p class="m">Type at least 2 letters.</p>';return}
