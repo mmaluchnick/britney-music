@@ -50,10 +50,10 @@ h2{font-weight:400;font-size:18px;margin:24px 20px 4px}
 #pl button{background:none;border:0;color:#fff;padding:6px;display:flex}
 #pl svg{width:26px;height:26px;fill:#fff}
 #sk{width:100%;margin:6px 0 0;accent-color:#fff}
-#nav{display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));background:rgba(70,8,18,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.25)}
+#nav{display:flex;padding:5px 0 calc(5px + env(safe-area-inset-bottom));background:rgba(70,8,18,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid rgba(255,255,255,.25)}
 #nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:300;opacity:.7}
 #nav a.on{opacity:1;font-weight:500}
-#nav svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#nav svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 </style></head><body>
 <div id="st"></div><div id="bg"></div><div id="app"></div><button id="tg"></button>
 <div id="bar"><div>
@@ -85,7 +85,10 @@ let token=ls.bt,exp=+ls.be||0,tc;
 document.body.classList.toggle('debug',/debug/.test(location.search));
 
 // ---- Layout: full design fitted to the screen on every page ----
-function fit(){const st=$('#st').offsetHeight,bh=$('#bar').offsetHeight,H0=innerHeight-st-bh,w=Math.min(innerWidth,H0*RATIO),h=w/RATIO,top=st+(H0-h)/2,r=document.documentElement.style;
+function fit(){const bh=$('#bar').offsetHeight,V=innerHeight-bh,K=.85,P=.085,r=document.documentElement.style;
+ let w=innerWidth,h=w/RATIO,top=0; // fill the width, crop the bottom; keep all 7 buttons visible
+ if(h<V){h=V;w=h*RATIO}
+ else if(K*h>V){const d=K*h-V;if(d<=P*h)top=-d;else{h=V/(K-P);w=h*RATIO;top=-P*h}}
  bg.style.cssText=`width:${w}px;height:${h}px;left:${(innerWidth-w)/2}px;top:${top}px`;
  r.setProperty('--sh',(top+h*.325)+'px');r.setProperty('--bh',bh+'px')}
 addEventListener('resize',fit);new ResizeObserver(fit).observe($('#bar'));
