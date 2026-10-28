@@ -17,8 +17,8 @@ body{margin:0;position:fixed;inset:0;overflow:hidden;font:400 16px Roboto,sans-s
 a{color:inherit;text-decoration:none}
 button,input{font-family:Roboto,sans-serif}
 #st{position:absolute;visibility:hidden;height:env(safe-area-inset-top,0px)}
-#bg{position:fixed;z-index:1;background:url(design.jpg) center/100% 100% no-repeat}
-.hs{position:absolute;left:5.9%;width:46.8%;height:6.03%;border-radius:999px}
+#bg{position:fixed;z-index:1;background:url(home.jpg) center/100% 100% no-repeat}
+.hs{position:absolute;left:6.9%;width:42.2%;height:5.51%;border-radius:999px}
 .debug .hs{outline:2px solid #0f0}
 #app{position:fixed;z-index:2;left:0;right:0;top:var(--sh,0);bottom:var(--bh,70px);max-width:520px;margin:0 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:24px;background:linear-gradient(rgba(118,15,26,0),rgba(118,15,26,.94) 46px)}
 #app::before{content:"";display:block;height:34px}
@@ -70,7 +70,7 @@ h2{font-weight:400;font-size:18px;margin:24px 20px 4px}
 <script>
 const ROOT='1QahxEmpd_6KO1NCjTb6VXmFZBFZlBJRF'; // Britney Music Library
 const CATS=['Albums','Singles & EPs','AI','Compilations','Remixes','Live','Other'];
-const TOPS=[33.05,40.59,48.15,55.75,63.32,70.89,78.45],RATIO=1320/2868;
+const TOPS=[33.19,39.99,46.79,53.66,60.46,67.26,74.06],RATIO=1320/2868;
 const D='https://www.googleapis.com/drive/v3/files',FOLDER='application/vnd.google-apps.folder',SD='&supportsAllDrives=true';
 const $=s=>document.querySelector(s),app=$('#app'),bg=$('#bg'),ls=localStorage,enc=encodeURIComponent;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -85,7 +85,7 @@ let token=ls.bt,exp=+ls.be||0,tc;
 document.body.classList.toggle('debug',/debug/.test(location.search));
 
 // ---- Layout: full design fitted to the screen on every page ----
-function fit(){const bh=$('#bar').offsetHeight,V=innerHeight-bh,K=.85,P=.085,r=document.documentElement.style;
+function fit(){const bh=$('#bar').offsetHeight,V=innerHeight-bh,K=.815,P=.07,r=document.documentElement.style;
  let w=innerWidth,h=w/RATIO,top=0; // fill the width, crop the bottom; keep all 7 buttons visible
  if(h<V){h=V;w=h*RATIO}
  else if(K*h>V){const d=K*h-V;if(d<=P*h)top=-d;else{h=V/(K-P);w=h*RATIO;top=-P*h}}
@@ -157,7 +157,7 @@ async function view(){
  const [p,a]=location.hash.replace(/^#\/?/,'').split('/');
  document.querySelectorAll('#nav a').forEach(x=>x.classList.toggle('on',x.dataset.p==(p=='cat'||p=='album'?'library':p||'')));
  document.body.classList.toggle('inner',!!p);document.body.classList.remove('peek');tgl();app.scrollTop=0;fit();
- bg.innerHTML=p?'':CATS.map((c,i)=>`<a class="hs" style="top:${TOPS[i]}%" href="#/cat/${enc(c)}" aria-label="${esc(c)}"></a>`).join('');
+ bg.style.backgroundImage=`url(${p?'inner':'home'}.jpg)`;bg.innerHTML=p?'':CATS.map((c,i)=>`<a class="hs" style="top:${TOPS[i]}%" href="#/cat/${enc(c)}" aria-label="${esc(c)}"></a>`).join('');
  if(!p)return;
  if(p=='library'){app.innerHTML='<h1>Library</h1>'+CATS.map(c=>`<a class="row" href="#/cat/${enc(c)}">${esc(c)}</a>`).join('');return}
  if(p=='search')return search();
@@ -187,5 +187,6 @@ async function search(){
   lazy();rs.querySelectorAll('.tr').forEach(el=>{const x=tr[+el.dataset.k];el.onclick=()=>play(x.a.fs,x.i,x.a.name,x.a.id)});mark()};
  q.oninput=go;go();q.focus()}
 function route(){view().catch(e=>e==='auth'?signinUI():msg(esc(e.message||e)))}
+['home','inner'].forEach(n=>new Image().src=n+'.jpg');
 addEventListener('hashchange',route);route();
 </script></body></html>
